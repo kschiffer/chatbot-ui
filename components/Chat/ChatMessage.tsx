@@ -2,6 +2,7 @@ import {
   IconCheck,
   IconCopy,
   IconEdit,
+  IconGitFork,
   IconRobot,
   IconTrash,
   IconUser,
@@ -22,14 +23,18 @@ import { MemoizedReactMarkdown } from '../Markdown/MemoizedReactMarkdown';
 import rehypeMathjax from 'rehype-mathjax';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import {text} from 'stream/consumers';
 
 export interface Props {
   message: Message;
   messageIndex: number;
+  onBeginEdit?: () => void;
   onEdit?: (editedMessage: Message) => void
+  onForkChat?: () => void;
+  isEditing?: boolean;
 }
 
-export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) => {
+export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onBeginEdit, onForkChat, isEditing }) => {
   const { t } = useTranslation('chat');
 
   const {
@@ -37,7 +42,6 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
     dispatch: homeDispatch,
   } = useContext(HomeContext);
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [messageContent, setMessageContent] = useState(message.content);
   const [messagedCopied, setMessageCopied] = useState(false);
@@ -45,7 +49,9 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const toggleEditing = () => {
-    setIsEditing(!isEditing);
+    if (onBeginEdit) {
+      onBeginEdit();
+    }
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -62,7 +68,6 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
         onEdit({ ...message, content: messageContent });
       }
     }
-    setIsEditing(false);
   };
 
   const handleDeleteMessage = () => {
@@ -121,6 +126,9 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
     if (textareaRef.current) {
       textareaRef.current.style.height = 'inherit';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+
+      // Move the cursor to the end of the text.
+      textareaRef.current.selectionStart = textareaRef.current.value.length;
     }
   }, [isEditing]);
 
@@ -155,6 +163,8 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                     onKeyDown={handlePressEnter}
                     onCompositionStart={() => setIsTyping(true)}
                     onCompositionEnd={() => setIsTyping(false)}
+                    name="message"
+                    autoFocus
                     style={{
                       fontFamily: 'inherit',
                       fontSize: 'inherit',
@@ -177,7 +187,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                       className="h-[40px] rounded-md border border-neutral-300 px-4 py-1 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                       onClick={() => {
                         setMessageContent(message.content);
-                        setIsEditing(false);
+                        toggleEditing();
                       }}
                     >
                       {t('Cancel')}
@@ -186,12 +196,71 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                 </div>
               ) : (
                 <div className="prose whitespace-pre-wrap dark:prose-invert flex-1">
+                  <MemoizedReactMarkdown
+                    className="prose dark:prose-invert flex-1"
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeMathjax]}
+                    components={{
+                      code({ node, inline, className, children, ...props }) {
+                        if (children.length) {
+                          if (children[0] == '▍') {
+                            return <span className="animate-pulse cursor-default mt-1">▍</span>
+                    }
+
+                    children[0] = (children[0] as string).replace("`▍`", "▍")
+                    }
+
+                    const match = /language-(\w+)/.exec(className || '');
+
+                    return !inline ? (
+                  <CodeBlock
+                    key={Math.random()}
+                    language={(match && match[1]) || ''}
+                    value={String(children).replace(/\n$/, '')}
+                    {...props}
+                  />
+                  ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                  );
+                  },
+                  table({ children }) {
+                    return (
+                      <table className="border-collapse border border-black px-3 py-1 dark:border-white">
+                        {children}
+                      </table>
+                    );
+                  },
+                  th({ children }) {
+                    return (
+                      <th className="break-words border border-black bg-gray-500 px-3 py-1 text-white dark:border-white">
+                        {children}
+                      </th>
+                    );
+                  },
+                  td({ children }) {
+                    return (
+                      <td className="break-words border border-black px-3 py-1 dark:border-white">
+                        {children}
+                      </td>
+                    );
+                  },
+                  }}
+                  >
                   {message.content}
+                  </MemoizedReactMarkdown>
                 </div>
               )}
 
               {!isEditing && (
                 <div className="md:-mr-8 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center md:items-start justify-end md:justify-start">
+                  <button
+                    className="invisible group-hover:visible focus:visible text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    onClick={copyOnClick}
+                  >
+                    <IconCopy size={20} />
+                  </button>
                   <button
                     className="invisible group-hover:visible focus:visible text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     onClick={toggleEditing}
@@ -273,12 +342,20 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                     className="text-green-500 dark:text-green-400"
                   />
                 ) : (
+                  <>
+                  <button
+                    className="invisible group-hover:visible focus:visible text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    onClick={onForkChat}
+                  >
+                    <IconGitFork size={20} />
+                  </button>
                   <button
                     className="invisible group-hover:visible focus:visible text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     onClick={copyOnClick}
                   >
                     <IconCopy size={20} />
                   </button>
+                  </>
                 )}
               </div>
             </div>

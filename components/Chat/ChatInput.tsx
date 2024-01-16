@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import toast from 'react-hot-toast';
 
 import { useTranslation } from 'next-i18next';
 
@@ -32,6 +33,7 @@ interface Props {
   onSend: (message: Message, plugin: Plugin | null) => void;
   onRegenerate: () => void;
   onScrollDownClick: () => void;
+  onEditLastMessage: () => void;
   stopConversationRef: MutableRefObject<boolean>;
   textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
   showScrollDownButton: boolean;
@@ -41,6 +43,7 @@ export const ChatInput = ({
   onSend,
   onRegenerate,
   onScrollDownClick,
+  onEditLastMessage,
   stopConversationRef,
   textareaRef,
   showScrollDownButton,
@@ -62,6 +65,7 @@ export const ChatInput = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showPluginSelect, setShowPluginSelect] = useState(false);
   const [plugin, setPlugin] = useState<Plugin | null>(null);
+  const [lastMessage, setLastMessage] = useState<string>('');
 
   const promptListRef = useRef<HTMLUListElement | null>(null);
 
@@ -87,9 +91,10 @@ export const ChatInput = ({
     updatePromptListVisibility(value);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (messageIsStreaming) {
-      return;
+      toast.error(t('Stopping current conversation...'));
+      await handleStopConversation();
     }
 
     if (!content) {
@@ -98,6 +103,7 @@ export const ChatInput = ({
     }
 
     onSend({ role: 'user', content }, plugin);
+    setLastMessage(content);
     setContent('');
     setPlugin(null);
 
@@ -106,11 +112,10 @@ export const ChatInput = ({
     }
   };
 
-  const handleStopConversation = () => {
+  const handleStopConversation = async () => {
     stopConversationRef.current = true;
-    setTimeout(() => {
-      stopConversationRef.current = false;
-    }, 1000);
+    await new Promise((resolve) => setTimeout(resolve, 1000)); 
+    stopConversationRef.current = false;
   };
 
   const isMobile = () => {
@@ -162,6 +167,9 @@ export const ChatInput = ({
       } else {
         setActivePromptIndex(0);
       }
+    } else if (e.key === 'ArrowUp' && !isMobile() && content === '') {
+      e.preventDefault();
+      onEditLastMessage();
     } else if (e.key === 'Enter' && !isTyping && !isMobile() && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -314,6 +322,7 @@ export const ChatInput = ({
           <textarea
             ref={textareaRef}
             className="m-0 w-full resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white md:py-3 md:pl-10"
+            name="message"
             style={{
               resize: 'none',
               bottom: `${textareaRef?.current?.scrollHeight}px`,

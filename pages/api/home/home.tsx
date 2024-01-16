@@ -207,6 +207,29 @@ const Home = ({
     dispatch({ field: 'loading', value: false });
   };
 
+  // Fork the conversation into a new one up until the message index.
+  const handleForkConversation = (conversation: Conversation, index: number) => {
+    const newConversation: Conversation = {
+      id: uuidv4(),
+      name: `${conversation.name} - ${t('Fork')}`,
+      messages: [...conversation.messages.slice(0, index)],
+      model: conversation.model,
+      prompt: conversation.prompt,
+      temperature: conversation.temperature,
+      folderId: conversation.folderId,
+    };
+
+    const updatedConversations = [...conversations, newConversation];
+
+    dispatch({ field: 'selectedConversation', value: newConversation });
+    dispatch({ field: 'conversations', value: updatedConversations });
+
+    saveConversation(newConversation);
+    saveConversations(updatedConversations);
+
+    dispatch({ field: 'loading', value: false });
+  };
+
   const handleUpdateConversation = (
     conversation: Conversation,
     data: KeyValuePair,
@@ -357,6 +380,7 @@ const Home = ({
         handleUpdateFolder,
         handleSelectConversation,
         handleUpdateConversation,
+        handleForkConversation,
       }}
     >
       <Head>

@@ -27,6 +27,7 @@ const Search: FC<Props> = ({ placeholder, searchTerm, onSearch }) => {
         placeholder={t(placeholder) || ''}
         value={searchTerm}
         onChange={handleSearchChange}
+        name="search"
       />
 
       {searchTerm && (

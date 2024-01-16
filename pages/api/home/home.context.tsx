@@ -20,6 +20,7 @@ export interface HomeContextProps {
     conversation: Conversation,
     data: KeyValuePair,
   ) => void;
+  handleForkConversation: (conversation: Conversation, index: number) => void;
 }
 
 const HomeContext = createContext<HomeContextProps>(undefined!);

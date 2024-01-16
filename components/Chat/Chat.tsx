@@ -21,6 +21,7 @@ import {
 import { throttle } from '@/utils/data/throttle';
 
 import { ChatBody, Conversation, Message } from '@/types/chat';
+import { OpenAIModels } from '@/types/openai';
 import { Plugin } from '@/types/plugin';
 
 import HomeContext from '@/pages/api/home/home.context';
@@ -33,6 +34,8 @@ import { ModelSelect } from './ModelSelect';
 import { SystemPrompt } from './SystemPrompt';
 import { TemperatureSlider } from './Temperature';
 import { MemoizedChatMessage } from './MemoizedChatMessage';
+
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>;
@@ -55,6 +58,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       prompts,
     },
     handleUpdateConversation,
+    handleForkConversation,
     dispatch: homeDispatch,
   } = useContext(HomeContext);
 
@@ -63,6 +67,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showScrollDownButton, setShowScrollDownButton] =
     useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<Number>(-1);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -253,6 +258,13 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
       stopConversationRef,
     ],
   );
+
+  // Fork the conversation at the message index into a new conversation.
+  const handleForkChat = useCallback((index: number) => {
+    if (selectedConversation) {
+      handleForkConversation(selectedConversation, index + 1);
+    }
+  }, [selectedConversation, handleForkConversation]);
 
   const scrollToBottom = useCallback(() => {
     if (autoScrollEnabled) {
@@ -468,14 +480,22 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                     key={index}
                     message={message}
                     messageIndex={index}
+                    onBeginEdit={() => {
+                      setIsEditing(isEditing !== index ? index : -1)
+                    }}
                     onEdit={(editedMessage) => {
                       setCurrentMessage(editedMessage);
                       // discard edited message and the ones that come after then resend
                       handleSend(
                         editedMessage,
-                        selectedConversation?.messages.length - index,
+                       selectedConversation?.messages.length - index,
                       );
+                      setIsEditing(-1);
                     }}
+                    onForkChat={() => {
+                      handleForkChat(index);
+                    }}
+                    isEditing={isEditing === index}
                   />
                 ))}
 
@@ -501,6 +521,16 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               if (currentMessage) {
                 handleSend(currentMessage, 2, null);
               }
+            }}
+            onEditLastMessage={() => {
+              for (let i = (selectedConversation?.messages.length || 0) - 1; i >= 0; i--) {
+                const message = selectedConversation?.messages[i];
+                if (message?.role === 'user') {
+                  setIsEditing(i);
+                  break;
+                }
+              }
+
             }}
             showScrollDownButton={showScrollDownButton}
           />
