@@ -1,56 +1,56 @@
-import { FC, useContext, useEffect, useReducer, useRef } from 'react';
+import { FC, useContext, useEffect, useReducer, useRef } from 'react'
 
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next'
 
-import { useCreateReducer } from '@/hooks/useCreateReducer';
+import { useCreateReducer } from '@/hooks/useCreateReducer'
 
-import { getSettings, saveSettings } from '@/utils/app/settings';
+import { getSettings, saveSettings } from '@/utils/app/settings'
 
-import { Settings } from '@/types/settings';
+import { Settings } from '@/types/settings'
 
-import HomeContext from '@/pages/api/home/home.context';
+import HomeContext from '@/pages/api/home/home.context'
 
 interface Props {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 export const SettingDialog: FC<Props> = ({ open, onClose }) => {
-  const { t } = useTranslation('settings');
-  const settings: Settings = getSettings();
+  const { t } = useTranslation('settings')
+  const settings: Settings = getSettings()
   const { state, dispatch } = useCreateReducer<Settings>({
     initialState: settings,
-  });
-  const { dispatch: homeDispatch } = useContext(HomeContext);
-  const modalRef = useRef<HTMLDivElement>(null);
+  })
+  const { dispatch: homeDispatch } = useContext(HomeContext)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('mouseup', handleMouseUp)
       }
-    };
+    }
 
     const handleMouseUp = (e: MouseEvent) => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      onClose();
-    };
+      window.removeEventListener('mouseup', handleMouseUp)
+      onClose()
+    }
 
-    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousedown', handleMouseDown)
 
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, [onClose]);
+      window.removeEventListener('mousedown', handleMouseDown)
+    }
+  }, [onClose])
 
   const handleSave = () => {
-    homeDispatch({ field: 'lightMode', value: state.theme });
-    saveSettings(state);
-  };
+    homeDispatch({ field: 'lightMode', value: state.theme })
+    saveSettings(state)
+  }
 
   // Render nothing if the dialog is not open.
   if (!open) {
-    return <></>;
+    return <></>
   }
 
   // Render the dialog.
@@ -58,10 +58,7 @@ export const SettingDialog: FC<Props> = ({ open, onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="fixed inset-0 z-10 overflow-hidden">
         <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-          <div
-            className="hidden sm:inline-block sm:h-screen sm:align-middle"
-            aria-hidden="true"
-          />
+          <div className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true" />
 
           <div
             ref={modalRef}
@@ -79,9 +76,7 @@ export const SettingDialog: FC<Props> = ({ open, onClose }) => {
             <select
               className="w-full cursor-pointer bg-transparent p-2 text-neutral-700 dark:text-neutral-200"
               value={state.theme}
-              onChange={(event) =>
-                dispatch({ field: 'theme', value: event.target.value })
-              }
+              onChange={event => dispatch({ field: 'theme', value: event.target.value })}
             >
               <option value="dark">{t('Dark mode')}</option>
               <option value="light">{t('Light mode')}</option>
@@ -91,8 +86,8 @@ export const SettingDialog: FC<Props> = ({ open, onClose }) => {
               type="button"
               className="w-full px-4 py-2 mt-6 border rounded-lg shadow border-neutral-500 text-neutral-900 hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
               onClick={() => {
-                handleSave();
-                onClose();
+                handleSave()
+                onClose()
               }}
             >
               {t('Save')}
@@ -101,5 +96,5 @@ export const SettingDialog: FC<Props> = ({ open, onClose }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

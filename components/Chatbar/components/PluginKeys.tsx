@@ -1,54 +1,53 @@
-import { IconKey } from '@tabler/icons-react';
-import { KeyboardEvent, useContext, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { IconKey } from '@tabler/icons-react'
+import { KeyboardEvent, useContext, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import { PluginID, PluginKey } from '@/types/plugin';
+import { PluginID, PluginKey } from '@/types/plugin'
 
-import HomeContext from '@/pages/api/home/home.context';
+import HomeContext from '@/pages/api/home/home.context'
 
-import { SidebarButton } from '@/components/Sidebar/SidebarButton';
+import { SidebarButton } from '@/components/Sidebar/SidebarButton'
 
-import ChatbarContext from '../Chatbar.context';
+import ChatbarContext from '../Chatbar.context'
 
 export const PluginKeys = () => {
-  const { t } = useTranslation('sidebar');
+  const { t } = useTranslation('sidebar')
 
   const {
     state: { pluginKeys },
-  } = useContext(HomeContext);
+  } = useContext(HomeContext)
 
-  const { handlePluginKeyChange, handleClearPluginKey } =
-    useContext(ChatbarContext);
+  const { handlePluginKeyChange, handleClearPluginKey } = useContext(ChatbarContext)
 
-  const [isChanging, setIsChanging] = useState(false);
+  const [isChanging, setIsChanging] = useState(false)
 
-  const modalRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null)
 
   const handleEnter = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      setIsChanging(false);
+      e.preventDefault()
+      setIsChanging(false)
     }
-  };
+  }
 
   useEffect(() => {
     const handleMouseDown = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('mouseup', handleMouseUp)
       }
-    };
+    }
 
     const handleMouseUp = (e: MouseEvent) => {
-      window.removeEventListener('mouseup', handleMouseUp);
-      setIsChanging(false);
-    };
+      window.removeEventListener('mouseup', handleMouseUp)
+      setIsChanging(false)
+    }
 
-    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousedown', handleMouseDown)
 
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, []);
+      window.removeEventListener('mousedown', handleMouseDown)
+    }
+  }, [])
 
   return (
     <>
@@ -80,8 +79,8 @@ export const PluginKeys = () => {
                 <div className="mt-6 rounded border p-4">
                   <div className="text-xl font-bold">Google Search Plugin</div>
                   <div className="mt-4 italic">
-                    Please enter your Google API Key and Google CSE ID to enable
-                    the Google Search Plugin.
+                    Please enter your Google API Key and Google CSE ID to enable the Google Search
+                    Plugin.
                   </div>
 
                   <div className="mt-6 text-sm font-bold text-black dark:text-neutral-200">
@@ -92,36 +91,33 @@ export const PluginKeys = () => {
                     type="password"
                     value={
                       pluginKeys
-                        .find((p) => p.pluginId === PluginID.GOOGLE_SEARCH)
-                        ?.requiredKeys.find((k) => k.key === 'GOOGLE_API_KEY')
-                        ?.value
+                        .find(p => p.pluginId === PluginID.GOOGLE_SEARCH)
+                        ?.requiredKeys.find(k => k.key === 'GOOGLE_API_KEY')?.value
                     }
-                    onChange={(e) => {
-                      const pluginKey = pluginKeys.find(
-                        (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
+                    onChange={e => {
+                      const pluginKey = pluginKeys.find(p => p.pluginId === PluginID.GOOGLE_SEARCH)
 
                       if (pluginKey) {
                         const requiredKey = pluginKey.requiredKeys.find(
-                          (k) => k.key === 'GOOGLE_API_KEY',
-                        );
+                          k => k.key === 'GOOGLE_API_KEY',
+                        )
 
                         if (requiredKey) {
                           const updatedPluginKey = {
                             ...pluginKey,
-                            requiredKeys: pluginKey.requiredKeys.map((k) => {
+                            requiredKeys: pluginKey.requiredKeys.map(k => {
                               if (k.key === 'GOOGLE_API_KEY') {
                                 return {
                                   ...k,
                                   value: e.target.value,
-                                };
+                                }
                               }
 
-                              return k;
+                              return k
                             }),
-                          };
+                          }
 
-                          handlePluginKeyChange(updatedPluginKey);
+                          handlePluginKeyChange(updatedPluginKey)
                         }
                       } else {
                         const newPluginKey: PluginKey = {
@@ -136,9 +132,9 @@ export const PluginKeys = () => {
                               value: '',
                             },
                           ],
-                        };
+                        }
 
-                        handlePluginKeyChange(newPluginKey);
+                        handlePluginKeyChange(newPluginKey)
                       }
                     }}
                   />
@@ -151,36 +147,33 @@ export const PluginKeys = () => {
                     type="password"
                     value={
                       pluginKeys
-                        .find((p) => p.pluginId === PluginID.GOOGLE_SEARCH)
-                        ?.requiredKeys.find((k) => k.key === 'GOOGLE_CSE_ID')
-                        ?.value
+                        .find(p => p.pluginId === PluginID.GOOGLE_SEARCH)
+                        ?.requiredKeys.find(k => k.key === 'GOOGLE_CSE_ID')?.value
                     }
-                    onChange={(e) => {
-                      const pluginKey = pluginKeys.find(
-                        (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
+                    onChange={e => {
+                      const pluginKey = pluginKeys.find(p => p.pluginId === PluginID.GOOGLE_SEARCH)
 
                       if (pluginKey) {
                         const requiredKey = pluginKey.requiredKeys.find(
-                          (k) => k.key === 'GOOGLE_CSE_ID',
-                        );
+                          k => k.key === 'GOOGLE_CSE_ID',
+                        )
 
                         if (requiredKey) {
                           const updatedPluginKey = {
                             ...pluginKey,
-                            requiredKeys: pluginKey.requiredKeys.map((k) => {
+                            requiredKeys: pluginKey.requiredKeys.map(k => {
                               if (k.key === 'GOOGLE_CSE_ID') {
                                 return {
                                   ...k,
                                   value: e.target.value,
-                                };
+                                }
                               }
 
-                              return k;
+                              return k
                             }),
-                          };
+                          }
 
-                          handlePluginKeyChange(updatedPluginKey);
+                          handlePluginKeyChange(updatedPluginKey)
                         }
                       } else {
                         const newPluginKey: PluginKey = {
@@ -195,9 +188,9 @@ export const PluginKeys = () => {
                               value: e.target.value,
                             },
                           ],
-                        };
+                        }
 
-                        handlePluginKeyChange(newPluginKey);
+                        handlePluginKeyChange(newPluginKey)
                       }
                     }}
                   />
@@ -205,12 +198,10 @@ export const PluginKeys = () => {
                   <button
                     className="mt-6 w-full rounded-lg border border-neutral-500 px-4 py-2 text-neutral-900 shadow hover:bg-neutral-100 focus:outline-none dark:border-neutral-800 dark:border-opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-300"
                     onClick={() => {
-                      const pluginKey = pluginKeys.find(
-                        (p) => p.pluginId === PluginID.GOOGLE_SEARCH,
-                      );
+                      const pluginKey = pluginKeys.find(p => p.pluginId === PluginID.GOOGLE_SEARCH)
 
                       if (pluginKey) {
-                        handleClearPluginKey(pluginKey);
+                        handleClearPluginKey(pluginKey)
                       }
                     }}
                   >
@@ -231,5 +222,5 @@ export const PluginKeys = () => {
         </div>
       )}
     </>
-  );
-};
+  )
+}

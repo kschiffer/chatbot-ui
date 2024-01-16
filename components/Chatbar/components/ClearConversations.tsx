@@ -1,23 +1,23 @@
-import { IconCheck, IconTrash, IconX } from '@tabler/icons-react';
-import { FC, useState } from 'react';
+import { IconCheck, IconTrash, IconX } from '@tabler/icons-react'
+import { FC, useState } from 'react'
 
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next'
 
-import { SidebarButton } from '@/components/Sidebar/SidebarButton';
+import { SidebarButton } from '@/components/Sidebar/SidebarButton'
 
 interface Props {
-  onClearConversations: () => void;
+  onClearConversations: () => void
 }
 
 export const ClearConversations: FC<Props> = ({ onClearConversations }) => {
-  const [isConfirming, setIsConfirming] = useState<boolean>(false);
+  const [isConfirming, setIsConfirming] = useState<boolean>(false)
 
-  const { t } = useTranslation('sidebar');
+  const { t } = useTranslation('sidebar')
 
   const handleClearConversations = () => {
-    onClearConversations();
-    setIsConfirming(false);
-  };
+    onClearConversations()
+    setIsConfirming(false)
+  }
 
   return isConfirming ? (
     <div className="flex w-full cursor-pointer items-center rounded-lg py-3 px-3 hover:bg-gray-500/10">
@@ -31,18 +31,18 @@ export const ClearConversations: FC<Props> = ({ onClearConversations }) => {
         <IconCheck
           className="ml-auto mr-1 min-w-[20px] text-neutral-400 hover:text-neutral-100"
           size={18}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleClearConversations();
+          onClick={e => {
+            e.stopPropagation()
+            handleClearConversations()
           }}
         />
 
         <IconX
           className="ml-auto min-w-[20px] text-neutral-400 hover:text-neutral-100"
           size={18}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsConfirming(false);
+          onClick={e => {
+            e.stopPropagation()
+            setIsConfirming(false)
           }}
         />
       </div>
@@ -53,5 +53,5 @@ export const ClearConversations: FC<Props> = ({ onClearConversations }) => {
       icon={<IconTrash size={18} />}
       onClick={() => setIsConfirming(true)}
     />
-  );
-};
+  )
+}

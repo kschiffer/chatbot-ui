@@ -1,10 +1,11 @@
 module.exports = {
+  printWidth: 100,
+  semi: false,
   trailingComma: 'all',
   singleQuote: true,
-  plugins: [
-    'prettier-plugin-tailwindcss',
-    '@trivago/prettier-plugin-sort-imports',
-  ],
+  bracketSpacing: true,
+  arrowParens: 'avoid',
+  plugins: ['prettier-plugin-tailwindcss', '@trivago/prettier-plugin-sort-imports'],
   importOrder: [
     'react', // React
     '^react-.*$', // React-related imports
@@ -22,4 +23,4 @@ module.exports = {
   ],
   importOrderSeparation: true,
   importOrderSortSpecifiers: true,
-};
+}

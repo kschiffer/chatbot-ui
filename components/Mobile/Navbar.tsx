@@ -1,17 +1,14 @@
-import { IconPlus } from '@tabler/icons-react';
-import { FC } from 'react';
+import { IconPlus } from '@tabler/icons-react'
+import { FC } from 'react'
 
-import { Conversation } from '@/types/chat';
+import { Conversation } from '@/types/chat'
 
 interface Props {
-  selectedConversation: Conversation;
-  onNewConversation: () => void;
+  selectedConversation: Conversation
+  onNewConversation: () => void
 }
 
-export const Navbar: FC<Props> = ({
-  selectedConversation,
-  onNewConversation,
-}) => {
+export const Navbar: FC<Props> = ({ selectedConversation, onNewConversation }) => {
   return (
     <nav className="flex w-full justify-between bg-[#202123] py-3 px-4">
       <div className="mr-4"></div>
@@ -25,5 +22,5 @@ export const Navbar: FC<Props> = ({
         onClick={onNewConversation}
       />
     </nav>
-  );
-};
+  )
+}

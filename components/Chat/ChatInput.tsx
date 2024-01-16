@@ -5,7 +5,7 @@ import {
   IconPlayerStop,
   IconRepeat,
   IconSend,
-} from '@tabler/icons-react';
+} from '@tabler/icons-react'
 import {
   KeyboardEvent,
   MutableRefObject,
@@ -14,29 +14,29 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import toast from 'react-hot-toast';
+} from 'react'
+import toast from 'react-hot-toast'
 
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next'
 
-import { Message } from '@/types/chat';
-import { Plugin } from '@/types/plugin';
-import { Prompt } from '@/types/prompt';
+import { Message } from '@/types/chat'
+import { Plugin } from '@/types/plugin'
+import { Prompt } from '@/types/prompt'
 
-import HomeContext from '@/pages/api/home/home.context';
+import HomeContext from '@/pages/api/home/home.context'
 
-import { PluginSelect } from './PluginSelect';
-import { PromptList } from './PromptList';
-import { VariableModal } from './VariableModal';
+import { PluginSelect } from './PluginSelect'
+import { PromptList } from './PromptList'
+import { VariableModal } from './VariableModal'
 
 interface Props {
-  onSend: (message: Message, plugin: Plugin | null) => void;
-  onRegenerate: () => void;
-  onScrollDownClick: () => void;
-  onEditLastMessage: () => void;
-  stopConversationRef: MutableRefObject<boolean>;
-  textareaRef: MutableRefObject<HTMLTextAreaElement | null>;
-  showScrollDownButton: boolean;
+  onSend: (message: Message, plugin: Plugin | null) => void
+  onRegenerate: () => void
+  onScrollDownClick: () => void
+  onEditLastMessage: () => void
+  stopConversationRef: MutableRefObject<boolean>
+  textareaRef: MutableRefObject<HTMLTextAreaElement | null>
+  showScrollDownButton: boolean
 }
 
 export const ChatInput = ({
@@ -48,34 +48,34 @@ export const ChatInput = ({
   textareaRef,
   showScrollDownButton,
 }: Props) => {
-  const { t } = useTranslation('chat');
+  const { t } = useTranslation('chat')
 
   const {
     state: { selectedConversation, messageIsStreaming, prompts },
 
     dispatch: homeDispatch,
-  } = useContext(HomeContext);
+  } = useContext(HomeContext)
 
-  const [content, setContent] = useState<string>();
-  const [isTyping, setIsTyping] = useState<boolean>(false);
-  const [showPromptList, setShowPromptList] = useState(false);
-  const [activePromptIndex, setActivePromptIndex] = useState(0);
-  const [promptInputValue, setPromptInputValue] = useState('');
-  const [variables, setVariables] = useState<string[]>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [showPluginSelect, setShowPluginSelect] = useState(false);
-  const [plugin, setPlugin] = useState<Plugin | null>(null);
-  const [lastMessage, setLastMessage] = useState<string>('');
+  const [content, setContent] = useState<string>()
+  const [isTyping, setIsTyping] = useState<boolean>(false)
+  const [showPromptList, setShowPromptList] = useState(false)
+  const [activePromptIndex, setActivePromptIndex] = useState(0)
+  const [promptInputValue, setPromptInputValue] = useState('')
+  const [variables, setVariables] = useState<string[]>([])
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [showPluginSelect, setShowPluginSelect] = useState(false)
+  const [plugin, setPlugin] = useState<Plugin | null>(null)
+  const [lastMessage, setLastMessage] = useState<string>('')
 
-  const promptListRef = useRef<HTMLUListElement | null>(null);
+  const promptListRef = useRef<HTMLUListElement | null>(null)
 
-  const filteredPrompts = prompts.filter((prompt) =>
+  const filteredPrompts = prompts.filter(prompt =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
-  );
+  )
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    const maxLength = selectedConversation?.model.maxLength;
+    const value = e.target.value
+    const maxLength = selectedConversation?.model.maxLength
 
     if (maxLength && value.length > maxLength) {
       alert(
@@ -83,186 +83,175 @@ export const ChatInput = ({
           `Message limit is {{maxLength}} characters. You have entered {{valueLength}} characters.`,
           { maxLength, valueLength: value.length },
         ),
-      );
-      return;
+      )
+      return
     }
 
-    setContent(value);
-    updatePromptListVisibility(value);
-  };
+    setContent(value)
+    updatePromptListVisibility(value)
+  }
 
   const handleSend = async () => {
     if (messageIsStreaming) {
-      toast.error(t('Stopping current conversation...'));
-      await handleStopConversation();
+      toast.error(t('Stopping current conversation...'))
+      await handleStopConversation()
     }
 
     if (!content) {
-      alert(t('Please enter a message'));
-      return;
+      alert(t('Please enter a message'))
+      return
     }
 
-    onSend({ role: 'user', content }, plugin);
-    setLastMessage(content);
-    setContent('');
-    setPlugin(null);
+    onSend({ role: 'user', content }, plugin)
+    setLastMessage(content)
+    setContent('')
+    setPlugin(null)
 
     if (window.innerWidth < 640 && textareaRef && textareaRef.current) {
-      textareaRef.current.blur();
+      textareaRef.current.blur()
     }
-  };
+  }
 
   const handleStopConversation = async () => {
-    stopConversationRef.current = true;
-    await new Promise((resolve) => setTimeout(resolve, 1000)); 
-    stopConversationRef.current = false;
-  };
+    stopConversationRef.current = true
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    stopConversationRef.current = false
+  }
 
   const isMobile = () => {
-    const userAgent =
-      typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
+    const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent
     const mobileRegex =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i;
-    return mobileRegex.test(userAgent);
-  };
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i
+    return mobileRegex.test(userAgent)
+  }
 
   const handleInitModal = () => {
-    const selectedPrompt = filteredPrompts[activePromptIndex];
+    const selectedPrompt = filteredPrompts[activePromptIndex]
     if (selectedPrompt) {
-      setContent((prevContent) => {
-        const newContent = prevContent?.replace(
-          /\/\w*$/,
-          selectedPrompt.content,
-        );
-        return newContent;
-      });
-      handlePromptSelect(selectedPrompt);
+      setContent(prevContent => {
+        const newContent = prevContent?.replace(/\/\w*$/, selectedPrompt.content)
+        return newContent
+      })
+      handlePromptSelect(selectedPrompt)
     }
-    setShowPromptList(false);
-  };
+    setShowPromptList(false)
+  }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (showPromptList) {
       if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setActivePromptIndex((prevIndex) =>
+        e.preventDefault()
+        setActivePromptIndex(prevIndex =>
           prevIndex < prompts.length - 1 ? prevIndex + 1 : prevIndex,
-        );
+        )
       } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setActivePromptIndex((prevIndex) =>
-          prevIndex > 0 ? prevIndex - 1 : prevIndex,
-        );
+        e.preventDefault()
+        setActivePromptIndex(prevIndex => (prevIndex > 0 ? prevIndex - 1 : prevIndex))
       } else if (e.key === 'Tab') {
-        e.preventDefault();
-        setActivePromptIndex((prevIndex) =>
-          prevIndex < prompts.length - 1 ? prevIndex + 1 : 0,
-        );
+        e.preventDefault()
+        setActivePromptIndex(prevIndex => (prevIndex < prompts.length - 1 ? prevIndex + 1 : 0))
       } else if (e.key === 'Enter') {
-        e.preventDefault();
-        handleInitModal();
+        e.preventDefault()
+        handleInitModal()
       } else if (e.key === 'Escape') {
-        e.preventDefault();
-        setShowPromptList(false);
+        e.preventDefault()
+        setShowPromptList(false)
       } else {
-        setActivePromptIndex(0);
+        setActivePromptIndex(0)
       }
     } else if (e.key === 'ArrowUp' && !isMobile() && content === '') {
-      e.preventDefault();
-      onEditLastMessage();
+      e.preventDefault()
+      onEditLastMessage()
     } else if (e.key === 'Enter' && !isTyping && !isMobile() && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+      e.preventDefault()
+      handleSend()
     } else if (e.key === '/' && e.metaKey) {
-      e.preventDefault();
-      setShowPluginSelect(!showPluginSelect);
+      e.preventDefault()
+      setShowPluginSelect(!showPluginSelect)
     }
-  };
+  }
 
   const parseVariables = (content: string) => {
-    const regex = /{{(.*?)}}/g;
-    const foundVariables = [];
-    let match;
+    const regex = /{{(.*?)}}/g
+    const foundVariables = []
+    let match
 
     while ((match = regex.exec(content)) !== null) {
-      foundVariables.push(match[1]);
+      foundVariables.push(match[1])
     }
 
-    return foundVariables;
-  };
+    return foundVariables
+  }
 
   const updatePromptListVisibility = useCallback((text: string) => {
-    const match = text.match(/\/\w*$/);
+    const match = text.match(/\/\w*$/)
 
     if (match) {
-      setShowPromptList(true);
-      setPromptInputValue(match[0].slice(1));
+      setShowPromptList(true)
+      setPromptInputValue(match[0].slice(1))
     } else {
-      setShowPromptList(false);
-      setPromptInputValue('');
+      setShowPromptList(false)
+      setPromptInputValue('')
     }
-  }, []);
+  }, [])
 
   const handlePromptSelect = (prompt: Prompt) => {
-    const parsedVariables = parseVariables(prompt.content);
-    setVariables(parsedVariables);
+    const parsedVariables = parseVariables(prompt.content)
+    setVariables(parsedVariables)
 
     if (parsedVariables.length > 0) {
-      setIsModalVisible(true);
+      setIsModalVisible(true)
     } else {
-      setContent((prevContent) => {
-        const updatedContent = prevContent?.replace(/\/\w*$/, prompt.content);
-        return updatedContent;
-      });
-      updatePromptListVisibility(prompt.content);
+      setContent(prevContent => {
+        const updatedContent = prevContent?.replace(/\/\w*$/, prompt.content)
+        return updatedContent
+      })
+      updatePromptListVisibility(prompt.content)
     }
-  };
+  }
 
   const handleSubmit = (updatedVariables: string[]) => {
     const newContent = content?.replace(/{{(.*?)}}/g, (match, variable) => {
-      const index = variables.indexOf(variable);
-      return updatedVariables[index];
-    });
+      const index = variables.indexOf(variable)
+      return updatedVariables[index]
+    })
 
-    setContent(newContent);
+    setContent(newContent)
 
     if (textareaRef && textareaRef.current) {
-      textareaRef.current.focus();
+      textareaRef.current.focus()
     }
-  };
+  }
 
   useEffect(() => {
     if (promptListRef.current) {
-      promptListRef.current.scrollTop = activePromptIndex * 30;
+      promptListRef.current.scrollTop = activePromptIndex * 30
     }
-  }, [activePromptIndex]);
+  }, [activePromptIndex])
 
   useEffect(() => {
     if (textareaRef && textareaRef.current) {
-      textareaRef.current.style.height = 'inherit';
-      textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`;
+      textareaRef.current.style.height = 'inherit'
+      textareaRef.current.style.height = `${textareaRef.current?.scrollHeight}px`
       textareaRef.current.style.overflow = `${
         textareaRef?.current?.scrollHeight > 400 ? 'auto' : 'hidden'
-      }`;
+      }`
     }
-  }, [content]);
+  }, [content])
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (
-        promptListRef.current &&
-        !promptListRef.current.contains(e.target as Node)
-      ) {
-        setShowPromptList(false);
+      if (promptListRef.current && !promptListRef.current.contains(e.target as Node)) {
+        setShowPromptList(false)
       }
-    };
+    }
 
-    window.addEventListener('click', handleOutsideClick);
+    window.addEventListener('click', handleOutsideClick)
 
     return () => {
-      window.removeEventListener('click', handleOutsideClick);
-    };
-  }, []);
+      window.removeEventListener('click', handleOutsideClick)
+    }
+  }, [])
 
   return (
     <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white to-white pt-6 dark:border-white/20 dark:via-[#343541] dark:to-[#343541] md:pt-2">
@@ -291,7 +280,7 @@ export const ChatInput = ({
           <button
             className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
             onClick={() => setShowPluginSelect(!showPluginSelect)}
-            onKeyDown={(e) => {}}
+            onKeyDown={e => {}}
           >
             {plugin ? <IconBrandGoogle size={20} /> : <IconBolt size={20} />}
           </button>
@@ -302,17 +291,17 @@ export const ChatInput = ({
                 plugin={plugin}
                 onKeyDown={(e: any) => {
                   if (e.key === 'Escape') {
-                    e.preventDefault();
-                    setShowPluginSelect(false);
-                    textareaRef.current?.focus();
+                    e.preventDefault()
+                    setShowPluginSelect(false)
+                    textareaRef.current?.focus()
                   }
                 }}
                 onPluginChange={(plugin: Plugin) => {
-                  setPlugin(plugin);
-                  setShowPluginSelect(false);
+                  setPlugin(plugin)
+                  setShowPluginSelect(false)
 
                   if (textareaRef && textareaRef.current) {
-                    textareaRef.current.focus();
+                    textareaRef.current.focus()
                   }
                 }}
               />
@@ -328,14 +317,10 @@ export const ChatInput = ({
               bottom: `${textareaRef?.current?.scrollHeight}px`,
               maxHeight: '400px',
               overflow: `${
-                textareaRef.current && textareaRef.current.scrollHeight > 400
-                  ? 'auto'
-                  : 'hidden'
+                textareaRef.current && textareaRef.current.scrollHeight > 400 ? 'auto' : 'hidden'
               }`,
             }}
-            placeholder={
-              t('Type a message or type "/" to select a prompt...') || ''
-            }
+            placeholder={t('Type a message or type "/" to select a prompt...') || ''}
             value={content}
             rows={1}
             onCompositionStart={() => setIsTyping(true)}
@@ -403,5 +388,5 @@ export const ChatInput = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}

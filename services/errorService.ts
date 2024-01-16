@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo } from 'react'
 
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next'
 
-import { ErrorMessage } from '@/types/error';
+import { ErrorMessage } from '@/types/error'
 
 const useErrorService = () => {
-  const { t } = useTranslation('chat');
+  const { t } = useTranslation('chat')
 
   return {
     getModelsError: useMemo(
@@ -18,18 +18,14 @@ const useErrorService = () => {
               messageLines: error.statusText
                 ? [error.statusText]
                 : [
-                    t(
-                      'Make sure your OpenAI API key is set in the bottom left of the sidebar.',
-                    ),
-                    t(
-                      'If you completed this step, OpenAI may be experiencing issues.',
-                    ),
+                    t('Make sure your OpenAI API key is set in the bottom left of the sidebar.'),
+                    t('If you completed this step, OpenAI may be experiencing issues.'),
                   ],
-            } as ErrorMessage);
+            } as ErrorMessage)
       },
       [t],
     ),
-  };
-};
+  }
+}
 
-export default useErrorService;
+export default useErrorService
