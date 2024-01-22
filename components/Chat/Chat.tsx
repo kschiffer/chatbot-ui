@@ -305,6 +305,12 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   //     homeDispatch({ field: 'currentMessage', value: undefined });
   //   }
   // }, [currentMessage]);
+  
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus()
+    }
+  }, [selectedConversation])
 
   useEffect(() => {
     throttledScrollDown()
